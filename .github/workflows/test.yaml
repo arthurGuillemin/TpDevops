@@ -1,0 +1,9 @@
+name: test-actions
+on: push
+jobs:
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: say test
+        run: echo "C'est tout bon !"
+        
