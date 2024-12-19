@@ -22,7 +22,9 @@ jobs:
         run: |
           echo "Lancemnt les tests unitaires..."
           php -v
-          php ./Tests/GlobalTest.php
+          php ./Tests/delete_test.php
+          php ./Tests/add_test.php
+
           echo "Tests done "
 
   build-and-push:
