@@ -21,8 +21,8 @@ jobs:
         working-directory: ./src 
         run: |
           echo "Lancemnt les tests unitaires..."
-          bash php-v
-          bash php /Tests/GlobalTest.php
+          php -v
+          php /Tests/GlobalTest.php
           echo "Tests done "
 
   build-and-push:
