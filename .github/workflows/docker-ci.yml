@@ -1,64 +1,62 @@
-name: Docker CI/CD
+name: Docker-CI
 
 on:
   push:
     branches:
-      - main 
+      - main  # Declenche le workflow quand push sur main
   pull_request:
     branches:
-      - main
+      - main  
 
 jobs:
   test:
-    name: Run Unit Tests
-    runs-on: ubuntu-latest
+    name: Run Unit Tests  
+    runs-on: ubuntu-latest  
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3  # récup le code source du repo
 
       - name: Run Unit Tests
-        working-directory: ./src 
+        working-directory: ./src  # exec les tests dans src
         run: |
-          echo "Lancer les tests unitaires"
-          # Remplacez cette commande par vos scripts ou outils de test, par exemple :
-          # ./bin/test ou phpunit, si applicable
+          echo "Lancer les tests unitaires"  
+          # remplacer par les test du coup
 
   build-and-push:
-    name: Build and Push Docker Images
+    name: Build and Push Docker Images  # job pour la construction et uplaod des images Docker
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3 
 
       - name: Log in to DockerHub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin  # Se connecte a dockerHub 
 
       - name: Build and Tag Docker Image
         run: |
-          TIMESTAMP=$(date +'%Y%m%d%H%M%S')
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/php-app:latest .
-          docker tag ${{ secrets.DOCKER_USERNAME }}/php-app:latest ${{ secrets.DOCKER_USERNAME }}/php-app:${TIMESTAMP}
-          echo "IMAGE_TAG=${TIMESTAMP}" >> $GITHUB_ENV
+          TIMESTAMP=$(date +'%Y%m%d%H%M%S')  # Génère un timestamp pour versionner l'image.
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/php-app:latest .  # Construit l'image Docker avec le tag 'latest'.
+          docker tag ${{ secrets.DOCKER_USERNAME }}/php-app:latest ${{ secrets.DOCKER_USERNAME }}/php-app:${TIMESTAMP}  # Tag l'image avec un tag basé sur le timestamp.
+          echo "IMAGE_TAG=${TIMESTAMP}" >> $GITHUB_ENV  # Enregistre le tag dans une variable d'environnement pour les étapes suivantes.
 
       - name: Push Docker Images
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/php-app:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/php-app:${{ env.IMAGE_TAG }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/php-app:latest  # Pousse l'image avec le tag 'latest' vers DockerHub.
+          docker push ${{ secrets.DOCKER_USERNAME }}/php-app:${{ env.IMAGE_TAG }}  # Pousse l'image avec le tag basé sur le timestamp.
 
   deploy:
-    name: Deploy Application
-    needs: build-and-push
-    runs-on: ubuntu-latest
+    name: Deploy Application  # Deployer l'app
+    needs: build-and-push 
+    runs-on: ubuntu-latest  
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v3 
       - name: Deploy to Server
         run: |
-          ssh -i ~/.ssh/id_rsa user@your-server "docker pull ${{ secrets.DOCKER_USERNAME }}/php-app:latest && docker-compose up -d"
+          ssh -i ~/.ssh/id_rsa user@your-server "docker pull ${{ secrets.DOCKER_USERNAME }}/php-app:latest && docker-compose up -d"  # Se connecte au serveur via SSH et déploie l'image Docker en utilisant docker-compose.
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}  
