@@ -1,0 +1,68 @@
+name: Docker CI/CD
+
+on:
+  push:
+    branches:
+      - main # Déclencher sur chaque push sur la branche main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          coverage: none
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Run Unit Tests
+        run: vendor/bin/phpunit --testdox
+
+  build-and-push:
+    name: Build and Push Docker Images
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build and Tag Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:latest .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/my-app:latest ${{ secrets.DOCKER_USERNAME }}/my-app:$(date +'%Y%m%d%H%M%S')
+
+      - name: Push Docker Image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/my-app:$(date +'%Y%m%d%H%M%S')
+
+  deploy:
+    name: Deploy Application
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Server
+        run: |
+          ssh -i ~/.ssh/id_rsa user@your-server "docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest && docker-compose up -d"
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
