@@ -2,7 +2,7 @@
 require 'BDD/db_connect.php';
 
 if (isset($_GET['id'])) {
-    $id = $_GET['id']; https://github.com/arthurGuillemin/TpDevops
+    $id = $_GET['id'];
     $stmt = $pdo->prepare("DELETE FROM tasks WHERE id = ?");
     $stmt->execute([$id]);
 
