@@ -3,7 +3,7 @@ name: Docker CI/CD
 on:
   push:
     branches:
-      - main # Déclenche sur les push dans la branche principale
+      - main 
   pull_request:
     branches:
       - main
@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run Unit Tests
-        working-directory: ./src # Adaptez le répertoire si nécessaire
+        working-directory: ./src 
         run: |
           echo "Lancer les tests unitaires"
           # Remplacez cette commande par vos scripts ou outils de test, par exemple :
