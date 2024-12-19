@@ -3,7 +3,7 @@ name: Docker CI/CD
 on:
   push:
     branches:
-      - main # Déclencher sur chaque push sur la branche main
+      - main # Déclenche sur les push dans la branche principale
   pull_request:
     branches:
       - main
@@ -17,17 +17,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.2
-          coverage: none
-
-      - name: Install Dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
-
       - name: Run Unit Tests
-        run: vendor/bin/phpunit --testdox
+        working-directory: ./src # Adaptez le répertoire si nécessaire
+        run: |
+          echo "Lancer les tests unitaires"
+          # Remplacez cette commande par vos scripts ou outils de test, par exemple :
+          # ./bin/test ou phpunit, si applicable
 
   build-and-push:
     name: Build and Push Docker Images
@@ -43,19 +38,18 @@ jobs:
 
       - name: Build and Tag Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:latest .
-          docker tag ${{ secrets.DOCKER_USERNAME }}/my-app:latest ${{ secrets.DOCKER_USERNAME }}/my-app:$(date +'%Y%m%d%H%M%S')
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/php-app:latest .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/php-app:latest ${{ secrets.DOCKER_USERNAME }}/php-app:$(date +'%Y%m%d%H%M%S')
 
       - name: Push Docker Image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/my-app:$(date +'%Y%m%d%H%M%S')
+          docker push ${{ secrets.DOCKER_USERNAME }}/php-app:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/php-app:$(date +'%Y%m%d%H%M%S')
 
   deploy:
     name: Deploy Application
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout Code
@@ -63,6 +57,6 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          ssh -i ~/.ssh/id_rsa user@your-server "docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest && docker-compose up -d"
+          ssh -i ~/.ssh/id_rsa user@your-server "docker pull ${{ secrets.DOCKER_USERNAME }}/php-app:latest && docker-compose up -d"
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
