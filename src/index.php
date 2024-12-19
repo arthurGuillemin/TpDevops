@@ -16,19 +16,19 @@ $todos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>TODO List</title>
 </head>
 <body>
-<h1>Ma TODO Liste</h1>
-<>
-    <?php foreach ($todos as $todo): ?>
-        <li>
-            <span><?= htmlspecialchars($todo['task']) ?></span>
-            <a href="update.php?id=<?= $todo['id'] ?>"class="btn">Modifier</a>
-            <a href="delete.php?id=<?= $todo['id'] ?>"class="btn delete">Supprimer</a>
-        </li>
+    <h1>Ma TODO Liste</h1>
+    <ul>
+        <?php foreach ($todos as $todo): ?>
+            <li>
+                <span><?=$todo['task']?></span>
+                <a href="update.php?id=<?= $todo['id'] ?>" class="btn">Modifier</a>
+                <a href="delete.php?id=<?= $todo['id'] ?>" class="btn delete">Supprimer</a>
+            </li>
         <?php endforeach; ?>
-        <>
-            <form action="add.php" method="POST">
-                <input type="text" name="task" placeholder="Nouvelle tâche" required>
-                <button type="submit" class="btn">Ajouter</button>
-            </form>
+    </ul>
+    <form action="add.php" method="POST">
+        <input type="text" name="todo" placeholder="Nouvelle tâche" required>
+        <button type="submit" class="btn">Ajouter</button>
+    </form>
 </body>
 </html>
