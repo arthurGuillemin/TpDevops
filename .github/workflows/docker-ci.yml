@@ -3,7 +3,7 @@ name: Docker-CI
 on:
   push:
     branches:
-      - main  # Declenche le workflow quand push sur main
+      - main  # declenche le workflow quand push sur main
   pull_request:
     branches:
       - main  
@@ -15,13 +15,14 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3  # récup le code source du repo
+        uses: actions/checkout@v3  # recup le code source du repo
 
       - name: Run Unit Tests
-        working-directory: ./src  # exec les tests dans src
+        working-directory: ./src 
         run: |
-          echo "Lancer les tests unitaires"  
-          # remplacer par les test du coup
+          echo "Lancemnt les tests unitaires..."
+          bash ./scripts/tes
+          echo "Tests done "
 
   build-and-push:
     name: Build and Push Docker Images  # job pour la construction et uplaod des images Docker
@@ -33,12 +34,12 @@ jobs:
         uses: actions/checkout@v3 
 
       - name: Log in to DockerHub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin  # Se connecte a dockerHub 
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin  #  connecte a dockerHub 
 
       - name: Build and Tag Docker Image
         run: |
           TIMESTAMP=$(date +'%Y%m%d%H%M%S')  # Génère un timestamp pour versionner l'image.
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/php-app:latest .  # Construit l'image Docker avec le tag 'latest'
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/php-app:latest .  # Construit l'image Docker avec le tag latest
           docker tag ${{ secrets.DOCKER_USERNAME }}/php-app:latest ${{ secrets.DOCKER_USERNAME }}/php-app:${TIMESTAMP}  # Tag l'image avec un tag timestamp
           echo "IMAGE_TAG=${TIMESTAMP}" >> $GITHUB_ENV  # Enregistre le tag dans une variable d'env
 
@@ -46,3 +47,18 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/php-app:latest  # Pousse l'image tag latest sur DockerHub
           docker push ${{ secrets.DOCKER_USERNAME }}/php-app:${{ env.IMAGE_TAG }}  # Pousse l'image avec le tag timestamp.
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: build-and-push  
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3  
+
+      - name: Azure Web App Deploy
+        uses: azure/webapps-deploy@v2  #  azure pour deployer l'app
+        with:
+          app-name: ${{ secrets.AZURE_WEB_APP_NAME }}  # nom de l'application Azure
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}  # profil de l'user
+          package: ./src  # Chemin du repo a deployer
