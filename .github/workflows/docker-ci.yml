@@ -38,25 +38,11 @@ jobs:
       - name: Build and Tag Docker Image
         run: |
           TIMESTAMP=$(date +'%Y%m%d%H%M%S')  # Génère un timestamp pour versionner l'image.
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/php-app:latest .  # Construit l'image Docker avec le tag 'latest'.
-          docker tag ${{ secrets.DOCKER_USERNAME }}/php-app:latest ${{ secrets.DOCKER_USERNAME }}/php-app:${TIMESTAMP}  # Tag l'image avec un tag basé sur le timestamp.
-          echo "IMAGE_TAG=${TIMESTAMP}" >> $GITHUB_ENV  # Enregistre le tag dans une variable d'environnement pour les étapes suivantes.
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/php-app:latest .  # Construit l'image Docker avec le tag 'latest'
+          docker tag ${{ secrets.DOCKER_USERNAME }}/php-app:latest ${{ secrets.DOCKER_USERNAME }}/php-app:${TIMESTAMP}  # Tag l'image avec un tag timestamp
+          echo "IMAGE_TAG=${TIMESTAMP}" >> $GITHUB_ENV  # Enregistre le tag dans une variable d'env
 
       - name: Push Docker Images
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/php-app:latest  # Pousse l'image avec le tag 'latest' vers DockerHub.
-          docker push ${{ secrets.DOCKER_USERNAME }}/php-app:${{ env.IMAGE_TAG }}  # Pousse l'image avec le tag basé sur le timestamp.
-
-  deploy:
-    name: Deploy Application  # Deployer l'app
-    needs: build-and-push 
-    runs-on: ubuntu-latest  
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3 
-      - name: Deploy to Server
-        run: |
-          ssh -i ~/.ssh/id_rsa user@your-server "docker pull ${{ secrets.DOCKER_USERNAME }}/php-app:latest && docker-compose up -d"  # Se connecte au serveur via SSH et déploie l'image Docker en utilisant docker-compose.
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}  
+          docker push ${{ secrets.DOCKER_USERNAME }}/php-app:latest  # Pousse l'image tag latest sur DockerHub
+          docker push ${{ secrets.DOCKER_USERNAME }}/php-app:${{ env.IMAGE_TAG }}  # Pousse l'image avec le tag timestamp.
