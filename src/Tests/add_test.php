@@ -1,6 +1,6 @@
 <?php 
 
-require_once(__DIR__ . '../BDD/db_connect.php');
+require_once(__DIR__ . '../../BDD/db_connect.php');
 function addTest(){
     global $pdo;
 
