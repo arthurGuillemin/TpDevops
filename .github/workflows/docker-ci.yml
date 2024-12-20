@@ -12,7 +12,6 @@ jobs:
   test:
     name: Run Unit Tests  
     runs-on: ubuntu-latest  
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3  # recup le code source du repo
