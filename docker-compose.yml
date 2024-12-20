@@ -12,10 +12,8 @@ services:
     depends_on:
       - db
 
+
   db:
-    command: >
-      --default-authentication-plugin=mysql_native_password
-      --init-file /docker-entrypoint-initdb.d/bdd.sql
     image: mysql:latest
     container_name: db
     restart: always
